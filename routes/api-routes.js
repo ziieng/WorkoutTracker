@@ -52,9 +52,9 @@ router.get("/exercise:id", (req, res) => {
 
 //add exercise to existing workout
 router.put("/api/workouts/:id", (req, res) => {
-  let target = req.params.id
-  console.log(req.body)
-  console.log(target)
+  let testResult = validateExercise(req.body)
+  if (testResult === "valid") {
+    let target = req.params.id
   Workout.findByIdAndUpdate(
     { _id: target },
     { $push: { exercise: [req.body] } },
@@ -69,6 +69,43 @@ router.put("/api/workouts/:id", (req, res) => {
         console.log(result)
       }
     })
+  } else {
+    console.log(testResult)
+    res.status(400).json(testResult)
+  }
 });
+
+function validateExercise(ex) {
+  //validate inputs (front-end has no handling for errors here?)
+  if (ex.type === "cardio") {
+    if (ex.name === "") {
+      return { message: "Exercise description required." };
+    };
+    if (ex.distance <= 0) {
+      return { message: "Distance required for cardio exercises." };
+    };
+    if (ex.duration <= 0) {
+      return { message: "Exercise duration required." };
+    };
+  } else if (ex.type === "resistance") {
+    if (ex.name === "") {
+      return { message: "Exercise description required." };
+    };
+    if (ex.weight <= 0) {
+      return { message: "Weight required for Resistance exercises." };
+    };
+    if (ex.sets <= 0) {
+      return { message: "Number of sets required for Resistance exercises." };
+    };
+    if (ex.reps <= 0) {
+      return { message: "Number of reps required for Resistance exercises." };
+    };
+    if (ex.duration <= 0) {
+      return { message: "Exercise duration required." };
+    };
+  }
+  //if nothing failed
+  return "valid"
+}
 
 module.exports = router;
