@@ -26,14 +26,17 @@ router.get("/api/workouts", (req, res) => {
 
 //return workouts for the last 7 days
 router.get("/api/workouts/range", (req, res) => {
-  // Workout.find({})
-  //   .sort({ date: -1 })
-  //   .then(dbTransaction => {
-  //     res.json(dbTransaction);
-  //   })
-  //   .catch(err => {
-  //     res.status(400).json(err);
-  //   });
+  Workout.find({
+    //date greater than today minus 7 days (7*60*60*24*1000)
+    date: { $gte: new Date(new Date() - 604800000) }
+  })
+    .sort({ date: -1 })
+    .then(dbTransaction => {
+      res.json(dbTransaction);
+    })
+    .catch(err => {
+      res.status(400).json(err);
+    });
 });
 
 //exercise page is searching for the id?
