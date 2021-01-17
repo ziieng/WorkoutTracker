@@ -24,13 +24,19 @@ router.get("/api/workouts", (req, res) => {
     });
 });
 
-//return workouts for the last 7 days
+//return aggregate with last 7 workouts (not last 7 days)
 router.get("/api/workouts/range", (req, res) => {
-  Workout.find({
-    //date greater than today minus 7 days (7*60*60*24*1000)
-    date: { $gte: new Date(new Date() - 604800000) }
-  })
-    .sort({ date: -1 })
+  Workout.aggregate([
+    { $sort: { date: -1 } },
+    { $limit: 7 },
+    {
+      //add fields the stats page (and only the stats page) is looking for
+      $addFields: {
+        totalDuration: { $sum: "$exercises.duration" },
+        day: { $toDate: "$date" }
+      }
+    }
+  ])
     .then(dbTransaction => {
       res.json(dbTransaction);
     })
