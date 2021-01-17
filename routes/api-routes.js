@@ -3,16 +3,17 @@ const Workout = require("../models/workout.js");
 
 //create new Workout instance
 router.post("/api/workouts", ({ body }, res) => {
+  //fields in model file are based off what front-end sends for this request
   Workout.create(body)
-    .then(dbTransaction => {
-      res.json(dbTransaction);
+    .then(result => {
+      res.json(result);
     })
     .catch(err => {
       res.status(400).json(err);
     });
 });
 
-//return most recent workouts to user
+//return most recent workout for index's summary fields
 router.get("/api/workouts", (req, res) => {
   Workout.aggregate([
     { $sort: { date: -1 } },
@@ -25,8 +26,8 @@ router.get("/api/workouts", (req, res) => {
       }
     }
   ])
-    .then(dbTransaction => {
-      res.json(dbTransaction);
+    .then(result => {
+      res.json(result);
     })
     .catch(err => {
       res.status(400).json(err);
@@ -36,19 +37,21 @@ router.get("/api/workouts", (req, res) => {
 //return aggregate with last 7 workouts (not last 7 days)
 router.get("/api/workouts/range", (req, res) => {
   Workout.aggregate([
+    //get 7 most recent
     { $sort: { date: -1 } },
     { $limit: 7 },
+    //re-sort for the graph display to have oldest to newest, left to right
     { $sort: { date: 1 } },
     {
-      //add fields the summaries looking for
+      //add fields the summaries are looking for
       $addFields: {
         totalDuration: { $sum: "$exercises.duration" },
         day: { $toDate: "$date" }
       }
     }
   ])
-    .then(dbTransaction => {
-      res.json(dbTransaction);
+    .then(result => {
+      res.json(result);
     })
     .catch(err => {
       res.status(400).json(err);
@@ -58,8 +61,8 @@ router.get("/api/workouts/range", (req, res) => {
 //exercise page is searching for the id?
 router.get("/exercise:id", (req, res) => {
   Workout.find({ _id: ObjectId(req.params.id) })
-    .then(dbTransaction => {
-      res.json(dbTransaction);
+    .then(result => {
+      res.json(result);
     })
     .catch(err => {
       res.status(400).json(err);
@@ -78,21 +81,19 @@ router.put("/api/workouts/:id", (req, res) => {
 
       if (err) {
         res.status(400).json(err);
-        console.log(err)
       }
       else {
         res.json(result);
-        console.log(result)
       }
     })
   } else {
-    console.log(testResult)
     res.status(400).json(testResult)
   }
 });
 
 function validateExercise(ex) {
   //validate inputs (front-end has no handling for errors here?)
+  //these cases only happen if user clicks "submit" again without changing any fields
   if (ex.type === "cardio") {
     if (ex.name === "") {
       return { message: "Exercise description required." };
