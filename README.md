@@ -2,6 +2,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+The Live Demo is on Heroku, [here](https://aqueous-peak-91831.herokuapp.com/).
+
 ## Table of Contents
 * [Description](#Description)
   * [Further Possibilities](#Further-Possibilities)
@@ -15,7 +17,8 @@
 ## Description
 A workout tracking application made to explore MongoDB and Mongoose.
 
-![Project Screenshot](./WorkoutTracker.gif)
+[![Project Screenshot](./WorkoutTracker.gif)](https://aqueous-peak-91831.herokuapp.com/)
+
 
 
 ### Further Possibilities
