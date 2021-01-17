@@ -14,8 +14,17 @@ router.post("/api/workouts", ({ body }, res) => {
 
 //return most recent workouts to user
 router.get("/api/workouts", (req, res) => {
-  Workout.find({})
-    .sort({ date: -1 })
+  Workout.aggregate([
+    { $sort: { date: -1 } },
+    { $limit: 1 },
+    {
+      //add fields the summaries are looking for
+      $addFields: {
+        totalDuration: { $sum: "$exercises.duration" },
+        day: { $toDate: "$date" }
+      }
+    }
+  ])
     .then(dbTransaction => {
       res.json(dbTransaction);
     })
@@ -29,8 +38,9 @@ router.get("/api/workouts/range", (req, res) => {
   Workout.aggregate([
     { $sort: { date: -1 } },
     { $limit: 7 },
+    { $sort: { date: 1 } },
     {
-      //add fields the stats page (and only the stats page) is looking for
+      //add fields the summaries looking for
       $addFields: {
         totalDuration: { $sum: "$exercises.duration" },
         day: { $toDate: "$date" }
@@ -63,7 +73,7 @@ router.put("/api/workouts/:id", (req, res) => {
     let target = req.params.id
   Workout.findByIdAndUpdate(
     { _id: target },
-    { $push: { exercise: [req.body] } },
+    { $push: { exercises: [req.body] } },
     function (err, result) {
 
       if (err) {
